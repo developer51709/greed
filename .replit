@@ -4,19 +4,10 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["arrow-cpp", "borgbackup", "c-ares", "cacert", "cairo", "cargo", "chromedriver", "ffmpeg", "ffmpeg-full", "file", "firefox", "freefont_ttf", "freetype", "gdk-pixbuf", "geckodriver", "gettext", "ghostscript", "gitFull", "glib", "glibcLocales", "gobject-introspection", "gtk3", "imagemagick", "lcms2", "libGL", "libcxx", "libffi", "libiconv", "libimagequant", "libjpeg", "libtiff", "libuv", "libwebp", "libxcrypt", "nodejs", "oneDNN", "openjpeg", "openssl", "pgadmin4", "pkg-config", "playwright-driver", "postgresql", "qhull", "re2", "rustc", "tcl", "tk", "util-linux", "xcodebuild", "xsimd", "zlib", "gcc", "gcc-unwrapped"]
+packages = ["arrow-cpp", "borgbackup", "c-ares", "cacert", "cairo", "cargo", "chromedriver", "ffmpeg", "ffmpeg-full", "file", "firefox", "freefont_ttf", "freetype", "gcc", "gcc-unwrapped", "gdk-pixbuf", "geckodriver", "gettext", "ghostscript", "gitFull", "glib", "glibcLocales", "gobject-introspection", "gtk3", "imagemagick", "lcms2", "libGL", "libcxx", "libffi", "libiconv", "libimagequant", "libjpeg", "libtiff", "libuv", "libwebp", "libxcrypt", "nodejs", "oneDNN", "openjpeg", "openssl", "pgadmin4", "pkg-config", "playwright-driver", "postgresql", "qhull", "re2", "rustc", "tcl", "tk", "util-linux", "xcodebuild", "xsimd", "zlib"]
 
 [workflows]
-runButton = "Project"
-
-[[workflows.workflow]]
-name = "Run"
-mode = "sequential"
-author = 53695201
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python run.py"
+runButton = "Run"
 
 [[workflows.workflow]]
 name = "Run"
