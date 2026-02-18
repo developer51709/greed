@@ -2,14 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import os
-from contextlib import suppress
 from functools import partial
 from typing import Awaitable, Callable, TypeVar, TYPE_CHECKING
 from typing_extensions import ParamSpec
 
-import distributed.client
-from tornado import gen
-import dill
 from .dask import get_dask, start_dask
 
 if TYPE_CHECKING:
@@ -37,109 +33,26 @@ def strtobool(val) -> bool:
 DEBUG = strtobool(os.getenv("DEBUG", "OFF"))
 
 
-@gen.coroutine
-def cascade_future(future: distributed.Future, cf_future: asyncio.Future):
-    result = yield future._result(raiseit=False)
-    status = future.status
-    if status == "finished":
-        with suppress(asyncio.InvalidStateError):
-            cf_future.set_result(result)
-    elif status == "cancelled":
-        cf_future.cancel()
-        cf_future.set_running_or_notify_cancel()
-    else:
-        try:
-            typ, exc, tb = result
-            raise exc.with_traceback(tb)
-        except BaseException as exc:
-            cf_future.set_exception(exc)
-
-
-def cf_callback(cf_future):
-    if cf_future.cancelled() and cf_future.dask_future.status != "cancelled":
-        asyncio.ensure_future(cf_callback.dask_future.cancel())
-
-
 def offloaded(f: Callable[P, T], batch_size: int = None) -> Callable[P, Awaitable[T]]:
-    """Offload a function to run on Dask cluster with optional batching support.
-
-    Args:
-        f: Function to offload
-        batch_size: Optional batch size for processing multiple items at once
-    """
-
     async def offloaded_task(*a, **ka):
         loop = asyncio.get_running_loop()
-        cf_future = loop.create_future()
 
-        # Handle batching if input is iterable and batch_size specified
         if batch_size and a and isinstance(a[-1], (list, tuple)):
             data = a[-1]
             other_args = a[:-1]
-
-            # Split into batches
             batches = [
                 data[i : i + batch_size] for i in range(0, len(data), batch_size)
             ]
 
             async def process_batch(batch):
                 args = (*other_args, batch)
-                return await _submit_to_dask(f, args, ka, loop)
+                meth = partial(f, *args, **ka)
+                return await loop.run_in_executor(None, meth)
 
-            # Process all batches
             results = await asyncio.gather(*[process_batch(batch) for batch in batches])
             return [item for batch in results for item in batch]
 
-        return await _submit_to_dask(f, a, ka, loop)
-
-    async def _submit_to_dask(f, a, ka, loop):
-        retries = 3
-        cf_future = loop.create_future()
-
-        for attempt in range(retries):
-            dask = get_dask()
-            if dask is None or dask.status in ("closed", "closing"):
-                try:
-                    dask = await start_dask("greed", "127.0.0.1:8787")
-                    if dask.status != "running":
-                        raise RuntimeError(
-                            f"Dask client is in {dask.status} state after restart"
-                        )
-                except Exception as e:
-                    if attempt == retries - 1:
-                        raise RuntimeError(
-                            f"Failed to restart Dask after {retries} attempts: {e}"
-                        )
-                    await asyncio.sleep(1)
-                    continue
-
-            try:
-                if dask.status != "running":
-                    if attempt == retries - 1:
-                        raise RuntimeError(f"Dask client is in {dask.status} state")
-                    await asyncio.sleep(1)
-                    continue
-
-                meth = partial(f, *a, **ka)
-                # Set worker_local=True to prefer data locality
-                cf_future.dask_future = dask.submit(meth, pure=False)
-                cf_future.dask_future.add_done_callback(cf_callback)
-                cascade_future(cf_future.dask_future, cf_future)
-                return await cf_future
-            except (
-                distributed.client.TimeoutError,
-                distributed.client.CancelledError,
-            ) as e:
-                if attempt == retries - 1:
-                    raise
-                await asyncio.sleep(1)
-                continue
-            except Exception as e:
-                if "after closing" in str(e) or "closed" in str(e):
-                    if attempt == retries - 1:
-                        raise RuntimeError(f"Dask client closed unexpectedly: {e}")
-                    await asyncio.sleep(1)
-                    continue
-                raise
+        meth = partial(f, *a, **ka)
+        return await loop.run_in_executor(None, meth)
 
     return offloaded_task

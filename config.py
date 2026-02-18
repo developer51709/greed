@@ -1,3 +1,4 @@
+import os
 from discord import Intents  # type: ignore
 
 CONFIG_DICT = {
@@ -11,14 +12,10 @@ CONFIG_DICT = {
         863914425445908490,
         915350867438338058,
     },
-    "token": "MTE0OTUzNTgzNDc1Njg3NDI1MA.GSOfph.hblFTcu2t1qmcPB61TnnB_eIIu2hNXRWk6QnSo",
-    "rival_api": "abc2f2fe-a27b-43c0-8b0d-5b4b76752209",
+    "token": os.environ.get("DISCORD_TOKEN", ""),
+    "rival_api": os.environ.get("RIVAL_API_KEY", ""),
     "domain": "https://greed.wtf",
 }
-
-# testing token MTMwMTg2MTExNTMxMTAzMDMzMw.GMZuAn.BMEDBuh0Tk1MYZUs81-moajFDaV8JbcIQR1OX8
-
-# main token MTE0OTUzNTgzNDc1Njg3NDI1MA.GVpIbW.lvZYmGc_g6QdvZyy649OxNtMen5v3Quc_ZlOgM
 
 
 CHANCES = {
@@ -35,10 +32,10 @@ class Authorization:
         csrf_token = ""
 
     class LastFM:
-        api_key = "ac82ef7e341d3e9dd71c2e7f5625b6a8"
-        api_secret = "1008d94193db951eae45e3ebf9a9a034"
+        api_key = os.environ.get("LASTFM_API_KEY", "ac82ef7e341d3e9dd71c2e7f5625b6a8")
+        api_secret = os.environ.get("LASTFM_API_SECRET", "1008d94193db951eae45e3ebf9a9a034")
         pending_auth = {}
         cb_url = "https://api.greed.rocks/callback"
 
     class Outages:
-        api_key = "greed_outages_api_key_2024_because_im_a_boss_85_2007_noscopes"
+        api_key = os.environ.get("OUTAGES_API_KEY", "greed_outages_api_key_2024_because_im_a_boss_85_2007_noscopes")
