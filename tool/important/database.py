@@ -49,8 +49,10 @@ class ConnectionContextManager(Protocol):
 
 class Database:
     def __init__(self):
-        self.uri: str = (
-            "postgres://postgres:azwnCeBdWK1uKtX6j3bqU6kli4xWEnTlp827kEHyIL8qYJ5xdg5ivMWtOaG@localhost:5432/greed"
+        import os
+        self.uri: str = os.environ.get(
+            "DATABASE_URL",
+            "postgres://postgres:azwnCeBdWK1uKtX6j3bqU6kli4xWEnTlp827kEHyIL8qYJ5xdg5ivMWtOaG@localhost:5432/greed",
         )
         self.pool: Optional[Pool] = None
         self.cache = {}
