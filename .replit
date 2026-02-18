@@ -1,0 +1,7 @@
+modules = ["python-3.12", "nodejs-20", "bash"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["arrow-cpp", "borgbackup", "c-ares", "cacert", "cairo", "cargo", "chromedriver", "ffmpeg-full", "file", "firefox", "freefont_ttf", "freetype", "gdk-pixbuf", "geckodriver", "gettext", "ghostscript", "gitFull", "glib", "glibcLocales", "gobject-introspection", "gtk3", "lcms2", "libGL", "libcxx", "libffi", "libiconv", "libimagequant", "libjpeg", "libtiff", "libuv", "libwebp", "libxcrypt", "nodejs", "oneDNN", "openjpeg", "openssl", "pgadmin4", "pkg-config", "playwright-driver", "postgresql", "qhull", "re2", "rustc", "tcl", "tk", "util-linux", "xcodebuild", "xsimd", "zlib"]
